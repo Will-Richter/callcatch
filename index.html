@@ -1,0 +1,1068 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141A40"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Callcatch"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="icon.png"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Callcatch Text-Back</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@600;700;800;900&family=Red+Hat+Text:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a navy masthead with the count of missed callers still waiting, one column of content under it, and a five-tab bar fixed to the bottom.
+   A lead opens as a sheet from the bottom on phones and from the right on wide screens. Same family as Firstcall and Rebook.
+   Type: Red Hat Display for names and numbers, Red Hat Text for everything else. Spacing 4 8 12 16 24. Corners 18 cards, 12 controls, full pills. */
+:root{
+  --bg:#F2F3F8; --surface:#FFFFFF; --surface-2:#F6F7FB; --ink:#141A40; --muted:#5B6287; --line:#E3E6F0; --line-2:#C8CDE0;
+  --tint:rgba(20,26,64,.06); --tint-2:rgba(20,26,64,.11);
+  --hero:#141A40; --hero-2:#212B6B; --hero-ink:#FFFFFF; --hero-muted:#B9BFE0; --hero-line:rgba(255,255,255,.14);
+  --accent:#F58220; --accent-ink:#141A40; --accent-soft:#FDEBD8; --accent-deep:#A64D05;
+  --primary:#141A40; --primary-ink:#FFFFFF;
+  --blue:#2450B8; --blue-soft:#E3EAFB;
+  --ok:#18733F; --ok-soft:#DEF3E6; --bad:#A3372F; --bad-soft:#F9E6E4; --amber:#855200; --amber-soft:#FBEFD3;
+  --bubble-out:#141A40; --bubble-out-ink:#FFFFFF; --bubble-in:#E6E8F2; --bubble-in-ink:#141A40;
+  --scrim:rgba(10,13,36,.52); --shadow:0 1px 2px rgba(20,26,64,.06),0 12px 32px rgba(20,26,64,.12);
+  --font-display:"Red Hat Display","Red Hat Text",system-ui,sans-serif;
+  --font-body:"Red Hat Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r:18px; --rc:12px; --tabh:62px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0A0D22; --surface:#131836; --surface-2:#191F44; --ink:#ECEEF9; --muted:#9AA1C6; --line:#242A54; --line-2:#363D70;
+  --tint:rgba(236,238,249,.08); --tint-2:rgba(236,238,249,.14);
+  --hero:#10153A; --hero-2:#1D2660; --hero-ink:#FFFFFF; --hero-muted:#AAB1D8; --hero-line:rgba(255,255,255,.12);
+  --accent:#F58220; --accent-ink:#141A40; --accent-soft:#3B2611; --accent-deep:#FFAB5C;
+  --primary:#F58220; --primary-ink:#141A40;
+  --blue:#93B1F7; --blue-soft:#182650;
+  --ok:#6FD39B; --ok-soft:#12301F; --bad:#F39088; --bad-soft:#3A1917; --amber:#EBB95E; --amber-soft:#35290F;
+  --bubble-out:#F58220; --bubble-out-ink:#141A40; --bubble-in:#232A5C; --bubble-in-ink:#ECEEF9;
+  --scrim:rgba(0,0,0,.62); --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.5); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0A0D22; --surface:#131836; --surface-2:#191F44; --ink:#ECEEF9; --muted:#9AA1C6; --line:#242A54; --line-2:#363D70;
+  --tint:rgba(236,238,249,.08); --tint-2:rgba(236,238,249,.14);
+  --hero:#10153A; --hero-2:#1D2660; --hero-ink:#FFFFFF; --hero-muted:#AAB1D8; --hero-line:rgba(255,255,255,.12);
+  --accent:#F58220; --accent-ink:#141A40; --accent-soft:#3B2611; --accent-deep:#FFAB5C;
+  --primary:#F58220; --primary-ink:#141A40;
+  --blue:#93B1F7; --blue-soft:#182650;
+  --ok:#6FD39B; --ok-soft:#12301F; --bad:#F39088; --bad-soft:#3A1917; --amber:#EBB95E; --amber-soft:#35290F;
+  --bubble-out:#F58220; --bubble-out-ink:#141A40; --bubble-in:#232A5C; --bubble-in-ink:#ECEEF9;
+  --scrim:rgba(0,0,0,.62); --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.5); color-scheme:dark }
+
+*{box-sizing:border-box}
+html.lock,html.lock body{overflow:hidden}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.45 var(--font-body);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3,p{margin:0}
+
+/* masthead */
+.hero{position:relative;background:linear-gradient(155deg,var(--hero) 30%,var(--hero-2) 130%);color:var(--hero-ink);overflow:hidden}
+.hero::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--hero);z-index:25}
+.hero-in{position:relative;max-width:820px;margin:0 auto;padding:14px 16px 16px;display:flex;flex-direction:column;gap:20px}
+.hero.big .hero-in{padding-bottom:26px}
+.brandrow{display:flex;align-items:center;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;font:800 21px/1 var(--font-display);letter-spacing:-.02em;margin-right:auto}
+.brand svg{width:34px;height:34px;flex:none}
+.brand i{font-style:normal;color:var(--accent)}
+.onpill{display:flex;align-items:center;gap:8px;min-height:36px;padding:0 14px 0 12px;border-radius:999px;border:1px solid var(--hero-line);background:rgba(255,255,255,.07);color:var(--hero-ink);font-weight:600;font-size:13px;white-space:nowrap}
+.onpill .dot{width:8px;height:8px;border-radius:50%;background:#FF8A7A;flex:none}
+.onpill.on .dot{background:#5EDB9A}
+.headline{display:flex;align-items:flex-end;gap:14px}
+.bignum{font:900 76px/.86 var(--font-display);letter-spacing:-.04em;color:var(--accent);font-variant-numeric:tabular-nums;min-width:.6em}
+.headline h1{margin:0 0 4px;font:700 21px/1.15 var(--font-display);letter-spacing:-.01em;text-wrap:balance;max-width:14em}
+.headline p{margin-top:5px;font-size:14px;color:var(--hero-muted)}
+.funnel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--hero-line);border-radius:14px;overflow:hidden}
+.funnel div{background:rgba(20,26,64,.55);padding:10px 8px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.funnel b{font:800 20px/1 var(--font-display);font-variant-numeric:tabular-nums}
+.funnel span{font-size:12px;color:var(--hero-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rings{position:absolute;right:-70px;top:-40px;width:330px;height:330px;pointer-events:none}
+.rings path{fill:none;stroke-linecap:round;stroke:#fff;opacity:.06;stroke-width:12}
+.rings path.hot{stroke:var(--accent);opacity:.5}
+.pagehead{display:none}
+.hero:not(.big) .headline,.hero:not(.big) .funnel{display:none}
+.hero:not(.big) .pagehead{display:block}
+.pagehead h1{font:800 24px/1.1 var(--font-display);letter-spacing:-.02em}
+.pagehead p{margin-top:5px;font-size:14px;color:var(--hero-muted);max-width:56ch}
+
+main{max-width:820px;margin:0 auto;padding-inline:16px;padding-block:14px calc(var(--tabh) + 96px);display:flex;flex-direction:column;gap:12px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:0 16px 2px} .chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:0 14px;font-weight:600;font-size:13px;color:var(--muted);min-height:38px}
+.chip b{font-weight:700;font-variant-numeric:tabular-nums;opacity:.75}
+.chip[aria-pressed="true"]{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
+.notice{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);background:var(--surface);border-radius:var(--rc);padding:12px 14px;font-size:14px}
+.notice.warn{background:var(--amber-soft);border-color:transparent;color:var(--amber)}
+.notice.err{background:var(--bad-soft);border-color:transparent;color:var(--bad)}
+.notice.ok{background:var(--ok-soft);border-color:transparent;color:var(--ok)}
+.notice .acts{display:flex;gap:8px;flex-wrap:wrap}
+#list{display:flex;flex-direction:column;gap:10px}
+
+/* lead card */
+.lead{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.lead.unread{border-color:var(--accent)}
+.lead-main{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;padding:14px 4px 14px 14px;border:0;background:none;text-align:left;min-width:0;width:100%}
+.avatar{position:relative;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font:800 15px/1 var(--font-display);background:var(--tint);color:var(--ink);flex:none}
+.avatar svg{width:20px;height:20px}
+.lead.unread .avatar::after{content:"";position:absolute;right:-3px;top:-3px;width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
+.lead-body{display:flex;flex-direction:column;gap:3px;min-width:0}
+.lead-top{display:flex;align-items:baseline;gap:8px;min-width:0}
+.lead .nm{font:700 17px/1.25 var(--font-display);letter-spacing:-.01em;overflow-wrap:anywhere;min-width:0}
+.lead .when{margin-left:auto;flex:none;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.lead-sub{font-size:14px;color:var(--muted);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.lead-msg{font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:0 10px;font-weight:600;font-size:12px;line-height:24px;white-space:nowrap;background:var(--tint);color:var(--muted);font-variant-numeric:tabular-nums}
+.pill.hot{background:var(--accent-soft);color:var(--accent-deep)} .pill.blue{background:var(--blue-soft);color:var(--blue)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.amber{background:var(--amber-soft);color:var(--amber)}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.callbtn{display:grid;place-items:center;width:50px;height:50px;margin:0 14px 0 6px;border-radius:50%;background:var(--primary);color:var(--primary-ink);text-decoration:none;flex:none;border:0}
+.callbtn svg{width:21px;height:21px}
+.callbtn[aria-disabled="true"]{background:var(--tint);color:var(--muted)}
+
+.empty{background:var(--surface);border:1px dashed var(--line-2);border-radius:var(--r);padding:28px 20px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.empty h2{font:800 22px/1.15 var(--font-display);letter-spacing:-.02em;text-wrap:balance}
+.empty p{max-width:56ch;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border-radius:var(--rc);border:0;background:var(--tint);font-weight:700;font-size:15px;color:var(--ink);text-align:center;text-decoration:none}
+.btn:hover{background:var(--tint-2)}
+.btn.primary{background:var(--primary);color:var(--primary-ink)} .btn.accent{background:var(--accent);color:var(--accent-ink)}
+.btn.danger{background:var(--bad-soft);color:var(--bad)}
+.btn.sm{min-height:38px;padding:0 13px;font-size:14px} .btn.wide{width:100%}
+.btn[disabled]{opacity:.55;cursor:default}
+.btn svg{width:18px;height:18px;flex:none}
+.linkbtn{background:none;border:0;padding:6px 2px;color:var(--accent-deep);font-weight:700;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+.spin{width:18px;height:18px;border-radius:50%;border:2.5px solid currentColor;border-right-color:transparent;animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader{display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 16px;color:var(--muted);font-weight:500;text-align:center}
+
+/* sections and forms */
+.sec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.sec h3{font:700 13px/1.2 var(--font-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.sec h2{font:800 19px/1.2 var(--font-display);letter-spacing:-.01em}
+.sec-head{display:flex;align-items:center;gap:8px}
+.sec-head h3{margin-right:auto}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);font-weight:600;min-width:0}
+.field input,.field select,.field textarea{border:1px solid var(--line-2);border-radius:var(--rc);background:var(--surface);padding:11px 12px;font-weight:400;font-size:16px;color:var(--ink);min-height:48px;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.field textarea{min-height:104px;resize:vertical;line-height:1.4}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.hint{font-size:13px;color:var(--muted);max-width:65ch}
+.hint code,.codebox code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.95em}
+.hint code{background:var(--tint);padding:1px 6px;border-radius:6px;color:var(--ink)}
+.meter{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.meter.warn{color:var(--amber)} .meter b{font-weight:700}
+.rowacts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.iconbtn{width:42px;height:42px;display:grid;place-items:center;border:0;background:none;border-radius:12px;flex:none;color:inherit;text-decoration:none}
+.iconbtn:hover{background:var(--tint)} .iconbtn svg{width:20px;height:20px}
+.iconbtn.fill{background:var(--tint);width:38px;height:38px} .iconbtn.fill svg{width:17px;height:17px}
+.iconbtn[disabled]{opacity:.3;cursor:default}
+.switch{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;cursor:pointer}
+.switch b{display:block;font-size:15px;font-weight:700}
+.switch span span{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.switch input{appearance:none;-webkit-appearance:none;width:52px;height:32px;border-radius:999px;background:var(--line-2);position:relative;margin:0;cursor:pointer;flex:none;transition:background-color .2s}
+.switch input::after{content:"";position:absolute;left:3px;top:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s cubic-bezier(.2,.9,.3,1.2)}
+.switch input:checked{background:var(--ok)}
+.switch input:checked::after{transform:translateX(20px)}
+.divide>*+*{border-top:1px solid var(--line);padding-top:12px}
+.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.plain li{display:grid;grid-template-columns:20px minmax(0,1fr);gap:8px;align-items:start}
+.plain svg{width:18px;height:18px;margin-top:1px;color:var(--muted)}
+.skiprow{display:flex;align-items:center;gap:8px;min-height:40px}
+.skiprow .v{flex:1;min-width:0;font-weight:600;overflow-wrap:anywhere}
+.skiprow .v small{display:block;font-weight:400;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.stepno{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font:800 13px/1 var(--font-display);flex:none}
+
+/* text thread */
+.thread{display:flex;flex-direction:column;gap:6px}
+.bub{max-width:84%;padding:9px 13px;border-radius:18px;font-size:15px;line-height:1.38;overflow-wrap:anywhere;white-space:pre-wrap}
+.bub.out{align-self:flex-end;background:var(--bubble-out);color:var(--bubble-out-ink);border-bottom-right-radius:6px}
+.bub.in{align-self:flex-start;background:var(--bubble-in);color:var(--bubble-in-ink);border-bottom-left-radius:6px}
+.sysline{align-self:center;font-size:12px;font-weight:600;color:var(--muted);padding:4px 10px;text-align:center;font-variant-numeric:tabular-nums}
+.bubtime{font-size:11px;color:var(--muted);margin:0 6px 4px;font-variant-numeric:tabular-nums} .bubtime.out{align-self:flex-end}
+.compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
+.compose textarea{border:1px solid var(--line-2);border-radius:22px;background:var(--surface);padding:11px 16px;font-size:16px;min-height:46px;max-height:140px;resize:none;width:100%;line-height:1.35}
+.compose textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.sendbtn{width:46px;height:46px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+.sendbtn svg{width:20px;height:20px} .sendbtn[disabled]{opacity:.5}
+
+/* test phone */
+.phone{border:1px solid var(--line-2);border-radius:28px;background:var(--surface-2);padding:14px;display:flex;flex-direction:column;gap:12px;min-height:300px}
+.phone-top{display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.phone-top b{display:block;font:700 15px/1.2 var(--font-display)} .phone-top span span{display:block;font-size:12px;color:var(--muted)}
+.phone .thread{flex:1;justify-content:flex-end}
+.verdict{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;border-radius:var(--rc);padding:12px 14px}
+.verdict.yes{background:var(--ok-soft);color:var(--ok)} .verdict.no{background:var(--amber-soft);color:var(--amber)}
+.verdict svg{width:22px;height:22px;margin-top:1px} .verdict b{display:block} .verdict span span{display:block;font-size:14px}
+.quote{padding:12px 14px;border-radius:12px;background:var(--surface-2);border-left:3px solid var(--accent);overflow-wrap:anywhere;white-space:pre-wrap;font-size:14px}
+.kv{display:grid;grid-template-columns:minmax(84px,auto) minmax(0,1fr);gap:9px 16px;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;overflow-wrap:anywhere;font-weight:500}
+
+/* setup */
+.step{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start}
+.step .body{display:flex;flex-direction:column;gap:10px;min-width:0}
+.step ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px;max-width:65ch}
+.stepmark{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--tint);color:var(--ink);font:800 14px/1 var(--font-display);flex:none}
+.stepmark.done{background:var(--ok-soft);color:var(--ok)} .stepmark svg{width:16px;height:16px}
+.codebox{display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--rc);padding:8px 8px 8px 12px;min-width:0}
+.codebox code{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;font-size:15px;user-select:all;-webkit-user-select:all;scrollbar-width:none}
+.codebox small{display:block;font-size:12px;color:var(--muted);font-family:var(--font-body)}
+.costs{width:100%;border-collapse:collapse;font-size:14px}
+.costs td{padding:8px 0;border-top:1px solid var(--line);vertical-align:top} .costs tr:first-child td{border-top:0}
+.costs td:last-child{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:12px}
+.radio{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:var(--rc);cursor:pointer}
+.radio input{width:20px;height:20px;accent-color:var(--accent);margin:0}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:40}
+.sheet{position:fixed;left:0;right:0;bottom:0;top:calc(env(safe-area-inset-top,0px) + 22px);z-index:41;background:var(--bg);border-radius:24px 24px 0 0;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+.sh-head{display:flex;align-items:center;gap:4px;padding:8px 8px 6px;position:relative}
+.sh-head::before{content:"";position:absolute;left:50%;top:7px;width:38px;height:4px;margin-left:-19px;border-radius:4px;background:var(--line-2)}
+.sh-head .t{flex:1;min-width:0;text-align:center;font-weight:700;font-size:14px;color:var(--muted);padding-top:8px}
+.sh-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:6px 16px calc(32px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.sh-name{font:800 28px/1.1 var(--font-display);letter-spacing:-.025em;overflow-wrap:anywhere;text-wrap:balance}
+.sh-sub{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px;padding:3px;background:var(--tint);border-radius:14px}
+.seg button{border:0;background:none;border-radius:11px;padding:9px 2px;font-size:14px;font-weight:700;color:var(--muted);min-height:42px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(20,26,64,.18)}
+.seg button[aria-pressed="true"][data-st="new"]{background:var(--accent);color:var(--accent-ink)}
+.seg button[aria-pressed="true"][data-st="contacted"]{background:var(--blue-soft);color:var(--blue)}
+.seg button[aria-pressed="true"][data-st="booked"]{background:var(--ok-soft);color:var(--ok)}
+.seg button[aria-pressed="true"][data-st="lost"]{background:var(--bad-soft);color:var(--bad)}
+.quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.qa{display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 8px;border-radius:16px;background:var(--surface);border:1px solid var(--line);font-weight:700;font-size:15px;text-decoration:none;color:var(--ink);min-width:0;min-height:52px}
+.qa svg{width:20px;height:20px;flex:none}
+.qa.call{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
+.qa[aria-disabled="true"]{opacity:.45;pointer-events:none}
+audio{width:100%}
+
+/* tab bar and save bar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabbar-in{max-width:820px;margin:0 auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));height:var(--tabh)}
+.tab{position:relative;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:700;color:var(--muted);min-width:0;padding:0}
+.tab svg{width:23px;height:23px}
+.tab[aria-current="page"]{color:var(--accent-deep)}
+.tab .badge{position:absolute;top:7px;left:50%;margin-left:6px;min-width:18px;height:18px;border-radius:9px;background:var(--accent);color:var(--accent-ink);font:800 11px/18px var(--font-display);padding:0 5px;text-align:center}
+.savebar{position:fixed;left:0;right:0;bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px));z-index:29;padding:10px 16px;pointer-events:none}
+.savebar-in{max-width:788px;margin:0 auto;display:flex;align-items:center;gap:8px;background:var(--ink);color:var(--bg);border-radius:16px;padding:8px 8px 8px 16px;box-shadow:var(--shadow);pointer-events:auto;font-weight:700;font-size:14px}
+.savebar-in span{margin-right:auto}
+.savebar .btn{background:rgba(127,127,127,.25);color:inherit}
+.savebar .btn.accent{background:var(--accent);color:var(--accent-ink)}
+#savebar:not([hidden])~.toast{bottom:calc(var(--tabh) + 92px + env(safe-area-inset-bottom,0px))}
+.toast{position:fixed;left:50%;bottom:calc(var(--tabh) + 22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:80;background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:999px;font-weight:700;font-size:14px;max-width:calc(100% - 32px);text-align:center;box-shadow:var(--shadow)}
+
+/* login */
+.gate{position:fixed;inset:0;z-index:90;background:linear-gradient(155deg,#141A40 30%,#212B6B 130%);color:#fff;display:grid;place-items:center;padding:24px 16px;overflow:auto}
+.gate-in{width:100%;max-width:360px;display:flex;flex-direction:column;gap:16px}
+.gate svg.logo{width:72px;height:72px}
+.gate h1{font:800 30px/1.1 var(--font-display);letter-spacing:-.02em} .gate h1 i{font-style:normal;color:#F58220}
+.gate p{color:#B9BFE0;font-size:15px}
+.gate input{height:52px;border-radius:14px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;padding:0 16px;font-size:16px;width:100%}
+.gate input:focus{outline:0;border-color:#F58220}
+.gate .err{color:#FFB3A8;font-weight:600;font-size:14px;min-height:20px}
+.gate ol{margin:0;padding-left:20px;color:#fff;display:flex;flex-direction:column;gap:8px}
+
+/* opening: the tile drops in, the bubble is drawn, the arrow comes back, the name rises */
+.splash{position:fixed;inset:0;z-index:100;background:#141A40;display:grid;place-items:center;animation:splashOut .45s cubic-bezier(.6,0,.3,1) 1.75s forwards}
+.splash-in{display:flex;flex-direction:column;align-items:center;gap:20px}
+.s-logo{width:104px;height:104px;overflow:visible}
+.s-tile{fill:#F58220;transform-origin:50px 50px;animation:sTile .55s cubic-bezier(.2,1.4,.4,1) both}
+.s-bub,.s-arr{fill:none;stroke:#141A40;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100}
+.s-bub{stroke-width:7;animation:sDraw .55s cubic-bezier(.65,0,.25,1) .35s forwards}
+.s-arr{stroke-width:7;animation:sDraw .35s cubic-bezier(.65,0,.25,1) .85s forwards}
+.s-word{display:flex;font:800 40px/1 var(--font-display);letter-spacing:-.03em;color:#fff}
+.s-word span{opacity:0;transform:translateY(16px);animation:sRise .42s cubic-bezier(.2,.8,.2,1) forwards}
+.s-word span.o{color:#F58220}
+.s-tag{font:600 13px/1 var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:#B9BFE0;opacity:0;animation:fadeIn .4s ease 1.35s forwards}
+@keyframes sTile{from{opacity:0;transform:scale(.4) rotate(-14deg)}to{opacity:1;transform:none}}
+@keyframes sDraw{to{stroke-dashoffset:0}}
+@keyframes sRise{to{opacity:1;transform:none}}
+@keyframes splashOut{to{opacity:0;transform:translateY(-4%);visibility:hidden}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+
+@media (prefers-reduced-motion: reduce){ .splash{display:none} .spin{animation-duration:2s} }
+@media (prefers-reduced-motion: no-preference){
+  .rings path{animation:breathe 4.2s ease-in-out infinite;transform-origin:120px 210px}
+  .rings path:nth-child(2){animation-delay:.35s}.rings path:nth-child(3){animation-delay:.7s}.rings path:nth-child(4){animation-delay:1.05s}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+  .lead.in,.view-in>*{animation:cardIn .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 38ms)}
+  .view-in>*:nth-child(2){--i:1}.view-in>*:nth-child(3){--i:2}.view-in>*:nth-child(4){--i:3}.view-in>*:nth-child(n+5){--i:4}
+  @keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+  .bub.pop{animation:bubIn .32s cubic-bezier(.2,1.2,.4,1) both}
+  @keyframes bubIn{from{opacity:0;transform:translateY(10px) scale(.94)}to{opacity:1;transform:none}}
+  .sheet{animation:sheetUp .36s cubic-bezier(.2,.85,.25,1) both}
+  .scrim{animation:fadeIn .25s ease both}
+  #sheetwrap.closing .sheet{animation:sheetDown .22s ease-in both}
+  #sheetwrap.closing .scrim{animation:fadeOut .22s ease both}
+  @keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+  @keyframes sheetDown{from{transform:none}to{transform:translateY(100%)}}
+  .toast,.savebar-in{animation:toastIn .3s cubic-bezier(.2,1.3,.4,1) both}
+  @keyframes toastIn{from{opacity:0;translate:0 16px}to{opacity:1;translate:0 0}}
+  .btn,.chip,.callbtn,.qa,.tab,.iconbtn,.seg button,.onpill,.sendbtn{transition:transform .13s ease,background-color .18s ease,color .18s ease,border-color .18s ease}
+  .btn:active,.chip:active,.callbtn:active,.qa:active,.seg button:active,.onpill:active,.sendbtn:active{transform:scale(.95)}
+  .tab:active svg{transform:scale(.88)} .tab svg{transition:transform .15s ease}
+  .lead-main:active{opacity:.75}
+  .bignum.bump{animation:bump .45s cubic-bezier(.2,1.5,.4,1)}
+  @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+  .typing i{animation:blink 1.1s ease-in-out infinite} .typing i:nth-child(2){animation-delay:.15s} .typing i:nth-child(3){animation-delay:.3s}
+  @keyframes blink{0%,100%{opacity:.25}40%{opacity:1}}
+}
+.typing{align-self:flex-end;display:flex;gap:4px;padding:12px 14px;border-radius:18px;background:var(--bubble-out)}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--bubble-out-ink);opacity:.6}
+@media (min-width:760px){
+  .hero.big .hero-in{padding-bottom:30px} .bignum{font-size:96px} .headline h1{font-size:26px}
+  .sheet{left:auto;top:0;width:520px;border-radius:0;padding-top:env(safe-area-inset-top,0px)}
+  .sh-head::before{display:none} .sh-head .t{padding-top:0}
+  .seg{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media (min-width:760px) and (prefers-reduced-motion: no-preference){
+  @keyframes sheetUp{from{transform:translateX(100%)}to{transform:none}}
+  @keyframes sheetDown{from{transform:none}to{transform:translateX(100%)}}
+}
+</style>
+
+<div class="splash" id="splash" aria-hidden="true"><div class="splash-in">
+  <svg class="s-logo" viewBox="0 0 100 100"><rect class="s-tile" x="4" y="4" width="92" height="92" rx="25"/><path class="s-bub" pathLength="100" d="M28 28h44a9 9 0 0 1 9 9v22a9 9 0 0 1-9 9H49L35 80V68h-7a9 9 0 0 1-9-9V37a9 9 0 0 1 9-9z"/><path class="s-arr" pathLength="100" d="M64 39v5a7 7 0 0 1-7 7H38M45 44l-7 7 7 7"/></svg>
+  <div class="s-word"><span style="animation-delay:.95s">C</span><span style="animation-delay:.99s">a</span><span style="animation-delay:1.03s">l</span><span style="animation-delay:1.07s">l</span><span class="o" style="animation-delay:1.13s">c</span><span class="o" style="animation-delay:1.17s">a</span><span class="o" style="animation-delay:1.21s">t</span><span class="o" style="animation-delay:1.25s">c</span><span class="o" style="animation-delay:1.29s">h</span></div>
+  <div class="s-tag">Missed calls, texted back</div>
+</div></div>
+
+<div class="gate" id="gate" hidden></div>
+
+<header class="hero big" id="hero">
+  <svg class="rings" viewBox="0 0 330 330" aria-hidden="true"><path d="M150 150a70 70 0 0 1 0 120"/><path class="hot" d="M190 110a120 120 0 0 1 0 200"/><path d="M232 70a172 172 0 0 1 0 280"/><path d="M276 30a226 226 0 0 1 0 360"/></svg>
+  <div class="hero-in">
+    <div class="brandrow">
+      <div class="brand">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="25" fill="#F58220"/><g fill="none" stroke="#141A40" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M28 28h44a9 9 0 0 1 9 9v22a9 9 0 0 1-9 9H49L35 80V68h-7a9 9 0 0 1-9-9V37a9 9 0 0 1 9-9z"/><path d="M64 39v5a7 7 0 0 1-7 7H38M45 44l-7 7 7 7"/></g></svg>
+        <span>Call<i>catch</i></span>
+      </div>
+      <button class="onpill" id="onpill" data-act="tab" data-tab="rules"><span class="dot"></span><span id="onlabel">Text-back on</span></button>
+    </div>
+    <div class="headline">
+      <div class="bignum" id="bignum">0</div>
+      <div><h1 id="headline">missed callers waiting on a call back</h1><p id="subline"></p></div>
+    </div>
+    <div class="funnel" id="funnel"></div>
+    <div class="pagehead"><h1 id="pagetitle"></h1><p id="pagesub"></p></div>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<div class="savebar" id="savebar" hidden><div class="savebar-in"><span>Unsaved changes</span><button class="btn sm" data-act="discard">Discard</button><button class="btn sm accent" data-act="save" id="savebtn">Save</button></div></div>
+
+<nav class="tabbar" aria-label="Sections"><div class="tabbar-in" id="tabbar"></div></nav>
+
+<div id="sheetwrap" hidden>
+  <div class="scrim" data-act="close"></div>
+  <aside class="sheet" role="dialog" aria-modal="true" aria-labelledby="shlabel">
+    <div class="sh-head">
+      <span class="iconbtn" aria-hidden="true"></span>
+      <div class="t" id="shlabel">Missed call</div>
+      <button class="iconbtn" data-act="close" aria-label="Close"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+    </div>
+    <div class="sh-body" id="shbody"></div>
+  </aside>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+<script>
+/* Callcatch conversation logic. Shared word for word by the engine and by the in-app test phone,
+   so what the test shows is what a real caller gets. No network or storage in here. */
+var Flow = (function () {
+  "use strict";
+
+  var DEFAULTS = {
+    v: 1,
+    enabled: true,
+    business: "Sunwise Solar Cleaning",
+    owner: "Will",
+    areaCode: "07",
+    steps: [
+      { label: "Name", text: "Hi, it's {owner} from {business}. Sorry I missed your call, I'm likely up on a roof. What's your name and I'll get back to you?" },
+      { label: "Address", text: "Thanks {first_name}. What's the address or suburb of the property?" },
+      { label: "Job", text: "What can we help with? e.g. solar panel clean, health check, gutters. If it's panels, roughly how many?" },
+      { label: "Best time to call", text: "Last one. When's a good time for me to call you back?" }
+    ],
+    closing: "Thanks {first_name}, that's all I need. I'll give you a call as soon as I can. Cheers, {owner} - {business}",
+    optOutLine: true,
+    skipKnown: true,
+    skipList: [],
+    cooldownHours: 12,
+    voicemail: true,
+    greeting: "Hi, you've called {owner} at {business}. Sorry I can't take your call right now. I've just sent you a text so I can get back to you faster. You can also leave a message after the tone.",
+    greetingNoText: "Hi, you've called {owner} at {business}. Sorry I can't take your call right now. Please leave your name, number and a short message after the tone and I'll call you back.",
+    notify: true,
+    notifyNumber: ""
+  };
+
+  var OPT_OUT = " Reply STOP to opt out";
+  var STOP_WORDS = ["stop", "stopall", "stop all", "unsubscribe", "cancel", "end", "quit", "opt out", "optout"];
+  var REASONS = {
+    off: "Text-back is switched off",
+    "private": "Private number, nothing to text",
+    landline: "Landline, can't receive texts",
+    optout: "Asked not to be texted",
+    skiplist: "On your skip list",
+    client: "Already a ServiceM8 client",
+    recent: "Already texted recently",
+    owner: "Your own number"
+  };
+
+  function merge(saved) {
+    var out = JSON.parse(JSON.stringify(DEFAULTS)), k;
+    saved = saved || {};
+    for (k in out) if (Object.prototype.hasOwnProperty.call(saved, k) && saved[k] !== null && saved[k] !== undefined) out[k] = saved[k];
+    if (!Array.isArray(out.steps) || !out.steps.length) out.steps = JSON.parse(JSON.stringify(DEFAULTS.steps));
+    out.steps = out.steps.slice(0, 8).map(function (s) {
+      return { label: String((s && s.label) || "Answer").slice(0, 40), text: String((s && s.text) || "").slice(0, 600) };
+    });
+    if (!Array.isArray(out.skipList)) out.skipList = [];
+    out.skipList = out.skipList.slice(0, 500).map(function (x) {
+      return { phone: String((x && x.phone) || ""), name: String((x && x.name) || "").slice(0, 60) };
+    }).filter(function (x) { return x.phone; });
+    out.cooldownHours = Math.max(0, Math.min(720, Number(out.cooldownHours) || 0));
+    ["business", "owner", "closing", "greeting", "greetingNoText", "notifyNumber", "areaCode"].forEach(function (f) { out[f] = String(out[f] == null ? "" : out[f]).slice(0, 600); });
+    ["enabled", "optOutLine", "skipKnown", "voicemail", "notify"].forEach(function (f) { out[f] = !!out[f]; });
+    return out;
+  }
+
+  /* Australian numbers to +61 form. Returns "" for anything that isn't a dialable number (private, blocked). */
+  function norm(raw, areaCode) {
+    var s = String(raw == null ? "" : raw).trim();
+    if (!s || /anonymous|restricted|unavailable|private|unknown|blocked/i.test(s)) return "";
+    var plus = s.charAt(0) === "+";
+    var d = s.replace(/\D/g, "");
+    if (!d || d === "266696687") return "";
+    if (plus) return d.length >= 8 ? "+" + d : "";
+    if (d.indexOf("0011") === 0) return "+" + d.slice(4);
+    if (d.indexOf("61") === 0 && d.length === 11) return "+" + d;
+    if (d.charAt(0) === "0" && d.length === 10) return "+61" + d.slice(1);
+    if (d.length === 9 && /^[23478]/.test(d)) return "+61" + d;
+    if (d.length === 8) { var a = String(areaCode || "07").replace(/\D/g, "").replace(/^0/, "") || "7"; return "+61" + a + d; }
+    if (/^1[38]00\d{6}$/.test(d) || /^13\d{4}$/.test(d)) return "+61" + d;
+    return d.length >= 8 ? "+" + d : "";
+  }
+  function isMobile(e164) { return /^\+614\d{8}$/.test(e164); }
+  function pretty(e164) {
+    var m = /^\+61(\d{9})$/.exec(e164 || "");
+    if (!m) return e164 || "Private number";
+    var d = "0" + m[1];
+    return d.charAt(1) === "4" ? d.slice(0, 4) + " " + d.slice(4, 7) + " " + d.slice(7) : "(" + d.slice(0, 2) + ") " + d.slice(2, 6) + " " + d.slice(6);
+  }
+
+  function firstName(answer) {
+    var s = String(answer || "").replace(/[\r\n]+/g, " ").trim();
+    s = s.replace(/^(hi|hey|hello|g'?day|yeah|yep|yes|sure|no worries)[\s,.!-]+/i, "");
+    s = s.replace(/^(it'?s|its|it is|my name is|my name'?s|name is|name'?s|this is|i'?m|i am|im)\s+/i, "");
+    s = s.replace(/\s+(here|speaking)\b.*$/i, "").replace(/[.,!?]+$/, "").trim();
+    var words = s.split(/\s+/).filter(Boolean);
+    if (!words.length || words.length > 3) return "";
+    if (!words.every(function (w) { return /^[A-Za-z][A-Za-z'\-]{0,24}$/.test(w); })) return "";
+    var f = words[0];
+    if (/^(who|what|why|wrong|sorry|stop|no|not|nah|ok|okay|thanks|cheers|call|please|mate|the|a|an)$/i.test(f)) return "";
+    return cap(f);
+  }
+  function cap(w) { return String(w).toLowerCase().replace(/(^|[-'])([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); }); }
+  function fullName(answer) {
+    var s = String(answer || "").replace(/[\r\n]+/g, " ").trim();
+    if (!firstName(s)) return "";
+    s = s.replace(/^(hi|hey|hello|g'?day|yeah|yep|yes|sure|no worries)[\s,.!-]+/i, "");
+    s = s.replace(/^(it'?s|its|it is|my name is|my name'?s|name is|name'?s|this is|i'?m|i am|im)\s+/i, "");
+    s = s.replace(/\s+(here|speaking)\b.*$/i, "").replace(/[.,!?]+$/, "").trim();
+    return s.split(/\s+/).map(cap).join(" ");
+  }
+
+  /* Fill {business} {owner} {first_name}. A missing first name leaves no gap or stray comma behind. */
+  function fill(tpl, settings, lead) {
+    var fn = (lead && lead.firstName) || "";
+    var out = String(tpl || "")
+      .replace(/\{business\}/gi, settings.business || "")
+      .replace(/\{owner\}/gi, settings.owner || "");
+    if (fn) out = out.replace(/\{first_?name\}/gi, fn);
+    else out = out.replace(/[ \t]*,?[ \t]*\{first_?name\}/gi, "");
+    return out.replace(/[ \t]{2,}/g, " ").replace(/\s+([,.!?])/g, "$1").trim();
+  }
+
+  /* Text length the way carriers bill it: plain characters fit 160 to a text, anything fancy drops that to 70. */
+  var GSM = "@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà";
+  var GSM_EXT = "^{}\\[~]|€";
+  function segments(text) {
+    var s = String(text || ""), len = 0, plain = true, odd = [], i, ch;
+    for (i = 0; i < s.length; i++) {
+      ch = s.charAt(i);
+      if (GSM.indexOf(ch) >= 0) len += 1;
+      else if (GSM_EXT.indexOf(ch) >= 0) len += 2;
+      else { plain = false; if (odd.indexOf(ch) < 0 && odd.length < 6) odd.push(ch); }
+    }
+    if (plain) return { plain: true, chars: len, parts: len <= 160 ? (len ? 1 : 0) : Math.ceil(len / 153), odd: odd };
+    return { plain: false, chars: s.length, parts: s.length <= 70 ? 1 : Math.ceil(s.length / 67), odd: odd };
+  }
+
+  function stepText(settings, lead, i) {
+    var t = fill(settings.steps[i].text, settings, lead);
+    if (i === 0 && settings.optOutLine) t = t.replace(/\s+$/, "") + OPT_OUT;
+    return t;
+  }
+
+  function newLead(phone, now, id) {
+    return {
+      id: id || "", phone: phone || "", name: "", firstName: "", source: "call",
+      stage: "skipped", reason: "", status: "new", step: 0, answers: [], messages: [],
+      calls: 1, lastCallAt: now, voicemails: [], knownName: "", notes: "", unread: true,
+      createdAt: now, updatedAt: now, lastTextAt: 0
+    };
+  }
+  function push(lead, dir, body, now) { lead.messages.push({ dir: dir, body: String(body), at: now }); if (lead.messages.length > 120) lead.messages = lead.messages.slice(-120); lead.updatedAt = now; }
+
+  /* Should this missed call get a text? ctx: { known: name or null, optedOut: bool, last: the latest lead for this number or null } */
+  function decide(settings, rawFrom, ctx, now) {
+    ctx = ctx || {};
+    var phone = norm(rawFrom, settings.areaCode);
+    var res = { phone: phone, send: false, reason: "", knownName: "" };
+    if (!phone) { res.reason = "private"; return res; }
+    var skip = null, i;
+    for (i = 0; i < settings.skipList.length; i++) if (norm(settings.skipList[i].phone, settings.areaCode) === phone) { skip = settings.skipList[i]; break; }
+    if (ctx.known) res.knownName = ctx.known;
+    if (skip && skip.name && !res.knownName) res.knownName = skip.name;
+    if (!settings.enabled) { res.reason = "off"; return res; }
+    if (settings.notifyNumber && norm(settings.notifyNumber, settings.areaCode) === phone) { res.reason = "owner"; return res; }
+    if (!isMobile(phone)) { res.reason = "landline"; return res; }
+    if (ctx.optedOut) { res.reason = "optout"; return res; }
+    if (skip) { res.reason = "skiplist"; return res; }
+    if (ctx.known && settings.skipKnown) { res.reason = "client"; return res; }
+    var last = ctx.last;
+    if (last && last.lastTextAt && now - last.lastTextAt < settings.cooldownHours * 36e5) { res.reason = "recent"; return res; }
+    res.send = true;
+    return res;
+  }
+
+  /* Start the conversation on a lead. Returns the texts to send. */
+  function start(settings, lead, now) {
+    lead.stage = "texted"; lead.reason = ""; lead.step = 0; lead.answers = []; lead.lastTextAt = now;
+    var t = stepText(settings, lead, 0);
+    push(lead, "out", t, now);
+    return [t];
+  }
+
+  /* A text came in from the caller. Returns { send: [texts], done: bool, optout: bool }. */
+  function reply(settings, lead, body, now) {
+    var text = String(body == null ? "" : body).trim();
+    var res = { send: [], done: false, optout: false };
+    push(lead, "in", text, now);
+    lead.unread = true;
+    if (STOP_WORDS.indexOf(text.toLowerCase().replace(/[.!]+$/, "")) >= 0) {
+      lead.stage = "optout"; lead.reason = "optout"; res.optout = true; return res;
+    }
+    if (lead.stage !== "texted" && lead.stage !== "chatting") return res;
+    var i = lead.step, step = settings.steps[i];
+    if (!step) { lead.stage = "complete"; return res; }
+    lead.answers.push({ label: step.label, value: text });
+    if (i === 0) { lead.firstName = firstName(text); lead.name = fullName(text) || lead.name; }
+    lead.step = i + 1; lead.stage = "chatting";
+    var out;
+    if (lead.step < settings.steps.length) out = stepText(settings, lead, lead.step);
+    else { out = fill(settings.closing, settings, lead); lead.stage = "complete"; res.done = true; }
+    if (out) { push(lead, "out", out, now); lead.lastTextAt = now; res.send.push(out); }
+    return res;
+  }
+
+  function summary(lead) {
+    var bits = ["New lead: " + (lead.name || "No name yet") + ", " + pretty(lead.phone)];
+    lead.answers.forEach(function (a, i) { if (i === 0 && lead.name) return; if (a.value) bits.push(a.label + ": " + a.value); });
+    var s = bits.join(". ");
+    return s.length > 300 ? s.slice(0, 297) + "..." : s;
+  }
+
+  return { DEFAULTS: DEFAULTS, REASONS: REASONS, OPT_OUT: OPT_OUT, merge: merge, norm: norm, isMobile: isMobile, pretty: pretty,
+    firstName: firstName, fill: fill, segments: segments, stepText: stepText, newLead: newLead, push: push,
+    decide: decide, start: start, reply: reply, summary: summary };
+})();
+
+var LIVE = false;
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function plural(n,w){return n+" "+w+(n===1?"":"s")}
+function reduced(){return !!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)}
+function getPath(o,p){p.split(".").forEach(function(k){o=o==null?o:o[k]});return o}
+function setPath(o,p,v){var a=p.split(".");for(var i=0;i<a.length-1;i++)o=o[a[i]];o[a[a.length-1]]=v}
+
+var ICON={
+ phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h3l1.6 4.4-2.1 1.6a12 12 0 0 0 6 6l1.6-2.1 4.4 1.6v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4 5.7 2 2 0 0 1 6 3.5z"/></svg>',
+ copy:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></svg>',
+ tick:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+ cross:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>',
+ send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg>',
+ up:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5-5 5 5"/></svg>',
+ down:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg>',
+ bin:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h12M8 6V4h4v2M6 6l.7 10h6.600L14 6"/></svg>',
+ nophone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h3l1.6 4.4-2.1 1.6a12 12 0 0 0 6 6l1.6-2.1 4.4 1.6v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4 5.7 2 2 0 0 1 6 3.5z"/><path d="M15 4l5 5M20 4l-5 5"/></svg>',
+ t_inbox:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13l2.500-7.500h11L20 13v5.500H4z"/><path d="M4 13h4.500l1 2.500h5l1-2.500H20"/></svg>',
+ t_script:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.500h16v11H10l-4.500 3.500v-3.500H4z"/><path d="M8 9.500h8M8 12.500h5"/></svg>',
+ t_rules:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></svg>',
+ t_test:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2.500"/><path d="M11 17.500h2"/></svg>',
+ t_setup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5h11M9 12h11M9 19h11"/><path d="M3.500 5l1 1 2-2M3.500 12l1 1 2-2M3.500 19l1 1 2-2"/></svg>'};
+
+var TABS=[["inbox","Inbox",ICON.t_inbox],["script","Script",ICON.t_script],["rules","Rules",ICON.t_rules],["test","Test",ICON.t_test],["setup","Setup",ICON.t_setup]];
+var HEAD={script:["Your script","What callers get, one text at a time. Each reply is saved against the lead."],
+  rules:["Rules","Who gets a text, what they hear, and how you find out."],
+  test:["Test phone","Miss a pretend call and reply as the caller. Nothing is sent to anyone."],
+  setup:["Setup","What it takes to switch on real calls and texts."]};
+var STATUS={"new":"To call back",contacted:"Called back",booked:"Booked",lost:"Not suitable"};
+var CHIPS=[["todo","To call back"],["contacted","Called back"],["booked","Booked"],["lost","Not suitable"],["all","All calls"]];
+var SAMPLE=["Sarah Mitchell","14 Example St, Bargara","Solar panel clean, about 20 panels","After 3pm today"];
+var SCEN=[
+ {id:"new",label:"New caller",from:"0491 570 156",desc:"A mobile number that isn't in ServiceM8."},
+ {id:"client",label:"Existing client",from:"0491 570 157",known:"Karen Doyle",desc:"A number that's already in your ServiceM8 clients."},
+ {id:"repeat",label:"Rings twice",from:"0491 570 158",recent:true,desc:"Someone you texted an hour ago rings again."},
+ {id:"landline",label:"Landline",from:"07 5550 0142",desc:"A home or office landline."},
+ {id:"private",label:"Private number",from:"anonymous",desc:"Caller ID is hidden."}];
+
+var S={settings:Flow.merge(null),draft:Flow.merge(null),leads:[],status:{live:LIVE,twilio:{},sm8:{}},view:"inbox",filter:"todo",open:null,ready:false,
+  sim:{scenario:"new",lead:null,verdict:null,done:false,busy:false},numbers:null,busy:{},err:{},confirmDel:false,shownNum:0,seen:{},noteT:null};
+
+/* ---------- time ---------- */
+function ago(ms){var m=Math.max(0,Math.round((Date.now()-ms)/6e4));if(m<2)return"Just now";if(m<60)return m+"m ago";var h=Math.round(m/60);if(h<24)return h+"h ago";var d=Math.round(h/24);if(d<7)return d+"d ago";
+  return new Date(ms).toLocaleDateString("en-AU",{day:"numeric",month:"short"})}
+function longDate(ms){return new Date(ms).toLocaleString("en-AU",{weekday:"short",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}
+function clock(ms){return new Date(ms).toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit"})}
+
+/* ---------- where the data lives: the engine when live, this page when previewing ---------- */
+function call(method,path,body){
+  var opt={method:method,credentials:"same-origin",headers:{}};
+  if(method!=="GET"){opt.headers["Content-Type"]="application/json";opt.body=JSON.stringify(body||{})}
+  return fetch(path,opt).then(function(r){return r.json().catch(function(){return{}}).then(function(j){
+    if(!r.ok){var e=new Error(j.message||"Something went wrong. Check your connection and try again.");e.code=j.error;e.status=r.status;e.steps=j.steps;throw e}
+    return j})},function(){var e=new Error("Can't reach Callcatch. Check your connection and try again.");e.code="offline";throw e});
+}
+var Live={
+  load:function(){return call("GET","/api/state")},
+  saveSettings:function(s){return call("PUT","/api/settings",{settings:s}).then(function(r){return r.settings})},
+  patchLead:function(id,p){return call("PATCH","/api/leads/"+id,p).then(function(r){return r.lead})},
+  sendMessage:function(id,b){return call("POST","/api/leads/"+id+"/message",{body:b}).then(function(r){return r.lead})},
+  deleteLead:function(id){return call("DELETE","/api/leads/"+id,{})}
+};
+function demoLeads(){
+  var s=Flow.merge(null),now=Date.now(),out=[],n=0;
+  function mk(from,minsAgo,answers,o){
+    o=o||{};var t=now-minsAgo*6e4,d=Flow.decide(s,from,{known:o.known||null},t),L=Flow.newLead(d.phone,t,"ex"+(++n));
+    L.example=true;L.knownName=d.knownName||"";if(L.knownName)L.name=L.knownName;Flow.push(L,"sys","Missed call",t);
+    if(d.send){Flow.start(s,L,t);(answers||[]).forEach(function(a,i){Flow.reply(s,L,a,t+(i+1)*70e3)})}else{L.stage="skipped";L.reason=d.reason}
+    if(o.calls){L.calls=o.calls;Flow.push(L,"sys","Called again",t+9*6e4)}
+    if(o.status)L.status=o.status;L.unread=!!o.unread;L.updatedAt=L.messages[L.messages.length-1].at;out.push(L);
+  }
+  mk("0491 570 156",24,["Sarah Mitchell","14 Example St, Bargara","Solar clean, 22 panels. Bit of lichen on a few","After 3 today"],{unread:true});
+  mk("0491 570 110",95,["Dave","Innes Park"],{unread:true});
+  mk("0491 570 158",300,[]);
+  mk("0491 570 157",1500,[],{known:"Karen Doyle"});
+  mk("07 5550 0142",1620,[],{calls:2});
+  mk("anonymous",2900,[]);
+  mk("0491 571 266",4400,["Tom Nguyen","Coral Cove","Health check and a clean, 16 panels","Any morning"],{status:"booked"});
+  return out;
+}
+var Demo={
+  load:function(){var st=null;try{st=JSON.parse(localStorage.getItem("callcatch-preview")||"null")}catch(e){}
+    return Promise.resolve({settings:Flow.merge(st),leads:demoLeads(),status:{live:false,twilio:{},sm8:{}}})},
+  saveSettings:function(s){s=Flow.merge(s);try{localStorage.setItem("callcatch-preview",JSON.stringify(s))}catch(e){}return Promise.resolve(s)},
+  patchLead:function(id,p){var L=leadOf(id);if(!L)return Promise.reject(new Error("That lead no longer exists."));Object.keys(p).forEach(function(k){L[k]=p[k]});return Promise.resolve(L)},
+  sendMessage:function(id,b){var L=leadOf(id),now=Date.now();Flow.push(L,"out",b,now);L.lastTextAt=now;if(L.status==="new")L.status="contacted";return Promise.resolve(L)},
+  deleteLead:function(id){return Promise.resolve({ok:true})}
+};
+var Store=LIVE?Live:Demo;
+
+/* ---------- leads ---------- */
+function leadOf(id){for(var i=0;i<S.leads.length;i++)if(S.leads[i].id===id)return S.leads[i];return null}
+function putLead(L){for(var i=0;i<S.leads.length;i++)if(S.leads[i].id===L.id){S.leads[i]=L;return}S.leads.unshift(L)}
+function dispName(L){return L.name||(L.phone?Flow.pretty(L.phone):"Private number")}
+function initials(n){var w=String(n).trim().split(/\s+/).filter(function(x){return/[a-z]/i.test(x)});if(!w.length)return"";return(w[0].charAt(0)+(w.length>1?w[w.length-1].charAt(0):"")).toUpperCase()}
+function needsCall(L){return L.status==="new"&&!!L.phone&&L.stage!=="optout"&&!(L.stage==="skipped"&&(L.reason==="skiplist"||L.reason==="owner"))}
+function inFilter(L,f){if(f==="todo")return needsCall(L);if(f==="all")return L.status!=="archived";return L.status===f}
+function stageInfo(L){
+  if(L.stage==="complete")return{cls:"ok",text:"Details collected"};
+  if(L.stage==="chatting")return{cls:"blue",text:"Replying · "+L.step+" of "+S.settings.steps.length+" answered"};
+  if(L.stage==="texted")return{cls:"amber",text:"Texted, no reply yet"};
+  if(L.stage==="inbound")return{cls:"blue",text:"Texted you first"};
+  if(L.stage==="optout")return{cls:"bad",text:"Opted out of texts"};
+  if(L.reason==="failed")return{cls:"bad",text:"Text failed to send"};
+  return{cls:"",text:"No text · "+(Flow.REASONS[L.reason]||"not sent").toLowerCase()};
+}
+function hasDir(L,d){return L.messages.some(function(m){return m.dir===d})}
+function counts(){var c={todo:0,contacted:0,booked:0,lost:0,all:0};S.leads.forEach(function(L){Object.keys(c).forEach(function(f){if(inFilter(L,f))c[f]++})});return c}
+
+/* ---------- small ui helpers ---------- */
+var toastT=null;
+function toast(msg){var t=$("toast");t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},2600)}
+function copyText(text,el){
+  function fallback(){if(el&&window.getSelection){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);toast("Selected. Press and hold to copy.")}else toast("Couldn't copy. Select it by hand.")}
+  try{navigator.clipboard.writeText(text).then(function(){toast("Copied")},fallback)}catch(e){fallback()}
+}
+var numT=null;
+function countTo(n){var el=$("bignum"),from=S.shownNum;if(from===n){el.textContent=n;return}S.shownNum=n;cancelAnimationFrame(numT);
+  if(reduced()){el.textContent=n;return}
+  var t0=performance.now(),dur=Math.min(900,250+Math.abs(n-from)*40);
+  (function step(t){var k=Math.min(1,Math.max(0,(t-t0)/dur));k=1-Math.pow(1-k,3);el.textContent=Math.round(from+(n-from)*k);if(k<1)numT=requestAnimationFrame(step);
+    else{el.classList.remove("bump");void el.offsetWidth;el.classList.add("bump")}})(t0);
+}
+function field(label,bind,o){o=o||{};var v=getPath(S.draft,bind),id="f-"+bind.replace(/\./g,"-");
+  var attrs='id="'+id+'" data-bind="'+bind+'"'+(o.attrs?" "+o.attrs:"");
+  return'<label class="field">'+esc(label)+(o.area?'<textarea '+attrs+' rows="'+(o.rows||4)+'">'+esc(v)+'</textarea>':'<input '+attrs+' type="'+(o.type||"text")+'" value="'+esc(v)+'">')+'</label>'}
+function toggle(bind,title,sub){return'<label class="switch"><span><b>'+esc(title)+'</b><span>'+esc(sub)+'</span></span><input type="checkbox" id="t-'+bind+'" data-bind="'+bind+'"'+(getPath(S.draft,bind)?" checked":"")+'></label>'}
+function dirty(){return JSON.stringify(S.draft)!==JSON.stringify(S.settings)}
+function syncSave(){$("savebar").hidden=!dirty()||!S.ready}
+function busyBtn(label,key,cls,attrs){var b=!!S.busy[key];return'<button class="btn '+(cls||"")+'" '+(attrs||"")+(b?" disabled":"")+'>'+(b?'<span class="spin"></span>':"")+esc(label)+'</button>'}
+function errBox(key){return S.err[key]?'<div class="notice err">'+esc(S.err[key])+'</div>':""}
+
+/* ---------- chrome: masthead and tab bar ---------- */
+function renderChrome(){
+  var c=counts(),big=S.view==="inbox";
+  $("hero").classList.toggle("big",big);
+  var ready=!S.status.live||!!(S.status.twilio&&S.status.twilio.ready);
+  $("onpill").classList.toggle("on",S.settings.enabled&&ready);
+  $("onlabel").textContent=!ready?"Not connected yet":S.settings.enabled?"Text-back on":"Text-back off";
+  if(big){
+    countTo(c.todo);
+    $("headline").textContent=c.todo===0?"You're all caught up":c.todo===1?"missed caller waiting on a call back":"missed callers waiting on a call back";
+    var wk=S.leads.filter(function(L){return Date.now()-L.createdAt<7*864e5});
+    var texted=wk.filter(function(L){return hasDir(L,"out")}).length,replied=wk.filter(function(L){return hasDir(L,"in")}).length,booked=wk.filter(function(L){return L.status==="booked"}).length;
+    $("subline").textContent=wk.length?"Last 7 days"+(S.status.live?"":" · example data"):"Missed calls will show up here.";
+    $("funnel").innerHTML=[["Missed",wk.length],["Texted",texted],["Replied",replied],["Booked",booked]].map(function(x){return'<div><b>'+x[1]+'</b><span>'+x[0]+'</span></div>'}).join("");
+  }else{$("pagetitle").textContent=HEAD[S.view][0];$("pagesub").textContent=HEAD[S.view][1]}
+  var warn=S.status.live&&!(S.status.twilio&&S.status.twilio.ready);
+  $("tabbar").innerHTML=TABS.map(function(t){var badge=t[0]==="inbox"&&c.todo?'<span class="badge">'+c.todo+'</span>':t[0]==="setup"&&warn?'<span class="badge">!</span>':"";
+    return'<button class="tab" data-act="tab" data-tab="'+t[0]+'"'+(S.view===t[0]?' aria-current="page"':"")+'>'+t[2]+'<span>'+t[1]+'</span>'+badge+'</button>'}).join("");
+  syncSave();
+}
+function go(view){S.view=view;S.err={};renderChrome();renderView(true);window.scrollTo(0,0);try{history.replaceState(null,"","#"+view)}catch(e){}}
+function renderView(fresh){
+  var m=$("main");m.className=fresh&&S.view!=="inbox"?"view-in":"";
+  if(!S.ready){m.innerHTML='<div class="loader"><span class="spin"></span><span>Opening Callcatch</span></div>';return}
+  m.innerHTML=({inbox:viewInbox,script:viewScript,rules:viewRules,test:viewTest,setup:viewSetup})[S.view](fresh);
+  if(S.view==="script")refreshMeters();if(S.view==="rules")notifyHint();
+}
+
+/* ---------- inbox ---------- */
+function cardHTML(L,i,fresh){
+  var st=stageInfo(L),name=dispName(L),tel=L.phone||"",ini=L.name?initials(L.name):"";
+  var sub=L.name&&L.phone?Flow.pretty(L.phone):"";
+  var msg=L.answers.slice(L.name?1:0).map(function(a){return a.value}).filter(Boolean).join(" · ");
+  var tags='<span class="pill '+st.cls+'">'+esc(st.text)+'</span>';
+  if(L.calls>1)tags+='<span class="pill">Called '+L.calls+'×</span>';
+  if((L.voicemails||[]).length)tags+='<span class="pill hot">Voicemail</span>';
+  if(L.knownName&&L.reason!=="client")tags+='<span class="pill">ServiceM8 client</span>';
+  if(L.status!=="new")tags+='<span class="pill '+(L.status==="booked"?"ok":L.status==="lost"?"bad":"blue")+'">'+esc(STATUS[L.status]||L.status)+'</span>';
+  if(L.example)tags+='<span class="pill">Example</span>';if(L.test)tags+='<span class="pill">Test</span>';
+  return'<article class="lead'+(L.unread?" unread":"")+(fresh?" in":"")+'" style="--i:'+Math.min(i,10)+'">'+
+    '<button class="lead-main" data-act="open" data-id="'+esc(L.id)+'"><span class="avatar" aria-hidden="true">'+(ini?esc(ini):(L.phone?ICON.phone:ICON.nophone))+'</span><span class="lead-body">'+
+    '<span class="lead-top"><span class="nm">'+esc(name)+'</span><span class="when">'+esc(ago(L.lastCallAt||L.updatedAt))+'</span></span>'+
+    (sub?'<span class="lead-sub">'+esc(sub)+'</span>':'')+(msg?'<span class="lead-msg">'+esc(msg)+'</span>':'')+
+    '<span class="tags">'+tags+'</span></span></button>'+
+    (tel?'<a class="callbtn" href="tel:'+esc(tel)+'" aria-label="Call '+esc(name)+'">'+ICON.phone+'</a>':'<span class="callbtn" aria-disabled="true" title="Number was hidden">'+ICON.phone+'</span>')+'</article>';
+}
+function viewInbox(fresh){
+  var c=counts(),h="";
+  if(!S.status.live)h+='<div class="notice"><span><b>You\'re looking at the preview.</b> These are example callers so you can see how it works. Real missed calls land here once the engine is switched on.</span><div class="acts"><button class="btn sm primary" data-act="tab" data-tab="test">Try the test phone</button><button class="btn sm" data-act="tab" data-tab="setup">See setup</button></div></div>';
+  else if(!S.status.twilio.ready)h+='<div class="notice warn"><span><b>Not taking calls yet.</b> Connect your text number to switch Callcatch on.</span><div class="acts"><button class="btn sm primary" data-act="tab" data-tab="setup">Finish setup</button></div></div>';
+  else if(!S.settings.enabled)h+='<div class="notice warn"><span><b>Text-back is switched off.</b> Missed calls are still logged here, but nobody gets a text.</span><div class="acts"><button class="btn sm primary" data-act="tab" data-tab="rules">Open rules</button></div></div>';
+  h+='<div class="chips">'+CHIPS.map(function(x){return'<button class="chip" data-act="filter" data-f="'+x[0]+'" aria-pressed="'+(S.filter===x[0])+'">'+x[1]+'<b>'+c[x[0]]+'</b></button>'}).join("")+'</div>';
+  var rows=S.leads.filter(function(L){return inFilter(L,S.filter)}).sort(function(a,b){return b.updatedAt-a.updatedAt});
+  if(!rows.length){
+    h+='<div class="empty">'+(S.leads.length?'<h2>Nothing in this list</h2><p>'+(S.filter==="todo"?"Everyone who rang has been dealt with.":"No missed calls are marked "+esc((STATUS[S.filter]||"").toLowerCase())+" yet.")+'</p>':
+      '<h2>No missed calls yet</h2><p>When someone rings and you can\'t pick up, they get your opening text within a few seconds and show up here with whatever they reply.</p>')+'</div>';
+  }else h+='<div id="list">'+rows.map(function(L,i){var f=fresh||!S.seen[L.id];S.seen[L.id]=1;return cardHTML(L,i,f)}).join("")+'</div>';
+  return h;
+}
+
+/* ---------- script ---------- */
+function meterHTML(text){
+  var g=Flow.segments(text),warn=g.parts>1||!g.plain,h='<span><b>'+g.chars+'</b> characters</span><span><b>'+plural(g.parts,"text")+'</b></span>';
+  if(!g.plain)h+='<span>Uses '+g.odd.map(function(c){return'"'+esc(c)+'"'}).join(" ")+', which cuts a text to 70 characters. Swap for plain punctuation.</span>';
+  else if(g.parts>1)h+='<span>Over 160 characters, so it is billed as '+g.parts+' texts.</span>';
+  return{html:h,warn:warn,parts:g.parts};
+}
+function refreshMeters(){
+  var d=S.draft,who={firstName:"Sarah"},outParts=0;
+  d.steps.forEach(function(st,i){var m=meterHTML(Flow.stepText(d,who,i)),el=$("meter-"+i);outParts+=m.parts;if(i===0&&d.optOutLine)m.html+="<span>Counts the opt-out line added on the end.</span>";if(el){el.innerHTML=m.html;el.className="meter"+(m.warn?" warn":"")}});
+  var mc=meterHTML(Flow.fill(d.closing,d,who)),ec=$("meter-c");outParts+=mc.parts;if(ec){ec.innerHTML=mc.html;ec.className="meter"+(mc.warn?" warn":"")}
+  var el=$("cost");if(el){var note=d.notify?2:0,cents=(outParts+note)*5.15+d.steps.length*0.75;
+    el.innerHTML="A caller who answers everything costs about <b>"+Math.round(cents)+"c</b>: "+plural(outParts,"text")+" out, "+d.steps.length+" back"+(note?", plus the summary text to you":"")+". A caller who never replies costs about "+Math.round(meterHTML(Flow.stepText(d,who,0)).parts*5.15)+"c."}
+}
+function viewScript(){
+  var d=S.draft,n=d.steps.length,h="";
+  h+='<section class="sec"><h3>Who the texts come from</h3><div class="two">'+field("Business name","business")+field("Your first name","owner")+'</div>'+
+    '<p class="hint">Write <code>{owner}</code>, <code>{business}</code> or <code>{first_name}</code> in any text and Callcatch fills it in. If the caller didn\'t give a clear name, <code>{first_name}</code> is quietly left out.</p></section>';
+  d.steps.forEach(function(st,i){
+    h+='<section class="sec"><div class="sec-head"><span class="stepno">'+(i+1)+'</span><h3>'+(i===0?"Opening text":"Question "+(i+1))+'</h3>'+
+      (i>0?'<button class="iconbtn fill" data-act="stepup" data-i="'+i+'" aria-label="Move up"'+(i<2?" disabled":"")+'>'+ICON.up+'</button><button class="iconbtn fill" data-act="stepdown" data-i="'+i+'" aria-label="Move down"'+(i===n-1?" disabled":"")+'>'+ICON.down+'</button><button class="iconbtn fill" data-act="stepdel" data-i="'+i+'" aria-label="Remove this question">'+ICON.bin+'</button>':"")+'</div>'+
+      (i===0?'<p class="hint">Sent within seconds of the missed call. Say who you are, then ask your first question.</p>':"")+
+      field("What it says","steps."+i+".text",{area:true,rows:i===0?5:3})+'<div class="meter" id="meter-'+i+'"></div>'+
+      field("Save their reply as","steps."+i+".label",{attrs:'maxlength="40"'})+'</section>';
+  });
+  if(n<6)h+='<button class="btn" data-act="stepadd">Add a question</button>';
+  h+='<section class="sec"><div class="sec-head"><span class="stepno">'+ICON.tick+'</span><h3>Closing text</h3></div><p class="hint">Sent after their last answer. You get your summary text at the same moment.</p>'+
+    field("What it says","closing",{area:true,rows:3})+'<div class="meter" id="meter-c"></div></section>';
+  h+='<section class="sec">'+toggle("optOutLine","Add \"Reply STOP to opt out\" to the opening text","A clear way to opt out is part of Australia's spam rules for business texts. Best left on.")+'</section>';
+  h+='<section class="sec"><h3>What a conversation costs</h3><p id="cost"></p><p class="hint">Worked out from Twilio\'s listed Australian prices (about 5c a text sent, under 1c received). Fewer, shorter questions cost less and get more replies.</p>'+
+    '<div class="rowacts"><button class="btn primary" data-act="tab" data-tab="test">Try it on the test phone</button><button class="linkbtn" data-act="resetscript">Put the original script back</button></div></section>';
+  return h;
+}
+
+/* ---------- rules ---------- */
+function notifyHint(){var el=$("notifyhint"),d=S.draft;if(!el)return;var p=Flow.norm(d.notifyNumber,d.areaCode),bad=d.notify&&!(p&&Flow.isMobile(p));
+  el.textContent=bad?"Add your mobile number here, or the summary texts have nowhere to go.":"Also stops Callcatch texting you when you test by ringing yourself.";el.style.color=bad?"var(--amber)":""}
+function viewRules(){
+  var d=S.draft,st=S.status,h="";
+  h+='<section class="sec">'+toggle("enabled","Text back missed calls","When this is off, missed calls are still logged in your inbox but nobody is texted.")+'</section>';
+  var sm;
+  if(!st.live)sm="In the live app this checks every caller against the clients and job contacts in your ServiceM8, refreshed a few times a day.";
+  else if(st.sm8.connected)sm="Checking against "+(st.sm8.count||0).toLocaleString("en-AU")+" numbers from ServiceM8"+(st.sm8.syncedAt?", refreshed "+ago(st.sm8.syncedAt).toLowerCase():"")+".";
+  else sm="ServiceM8 isn't connected yet, so every caller counts as new. Connect it under Setup.";
+  h+='<section class="sec divide"><h3>Who gets a text</h3>'+
+    toggle("skipKnown","Skip existing ServiceM8 clients","They\'re logged as a missed call with their name, and no text goes out.")+
+    '<p class="hint">'+esc(sm)+'</p>'+
+    '<div><label class="field">Don\'t text the same number again within (hours)<input id="f-cooldown" data-bind="cooldownHours" type="number" inputmode="numeric" min="0" max="720" value="'+esc(d.cooldownHours)+'"></label></div>'+
+    '<ul class="plain"><li>'+ICON.cross+'<span><b>Never texted:</b> landlines, private numbers, anyone who has replied STOP, and your own mobile.</span></li></ul></section>';
+  h+='<section class="sec"><h3>Skip list</h3><p class="hint">Family, mates, suppliers. Their missed calls are logged quietly and never texted.</p>'+
+    (d.skipList.length?d.skipList.map(function(x,i){return'<div class="skiprow"><div class="v">'+esc(x.name||"No name")+'<small>'+esc(Flow.pretty(Flow.norm(x.phone,d.areaCode))||x.phone)+'</small></div><button class="iconbtn fill" data-act="skipdel" data-i="'+i+'" aria-label="Remove '+esc(x.name||x.phone)+'">'+ICON.bin+'</button></div>'}).join(""):"")+
+    '<div class="two"><label class="field">Name<input id="skipname" type="text" autocomplete="off" placeholder="Mum"></label><label class="field">Number<input id="skipnum" type="tel" inputmode="tel" autocomplete="off" placeholder="04XX XXX XXX"></label></div>'+
+    errBox("skip")+'<div class="rowacts"><button class="btn" data-act="skipadd">Add to skip list</button></div></section>';
+  h+='<section class="sec divide"><h3>What callers hear</h3>'+
+    '<p class="hint">Forwarded calls land on Callcatch instead of your carrier\'s voicemail, so this greeting replaces your old voicemail message. It is read out in an Australian voice.</p>'+
+    '<div>'+field("When a text has gone out","greeting",{area:true,rows:4})+'</div>'+
+    '<div>'+field("When no text was sent (clients, landlines, private numbers)","greetingNoText",{area:true,rows:4})+'</div>'+
+    toggle("voicemail","Let callers leave a voicemail","Up to two minutes after the beep. It is saved against the lead to play back.")+'</section>';
+  h+='<section class="sec divide"><h3>How you find out</h3>'+
+    toggle("notify","Text me when a lead is ready","One summary text with their name, address and job once they\'ve answered everything. Also when someone texts the number out of the blue.")+
+    '<div>'+field("Your mobile","notifyNumber",{type:"tel",attrs:'inputmode="tel" autocomplete="off" placeholder="04XX XXX XXX"'})+'<p class="hint" id="notifyhint" style="margin-top:6px"></p></div></section>';
+  return h;
+}
+
+/* ---------- test phone ---------- */
+function threadHTML(L,popFrom){
+  var h="",last=L.messages.length-1;
+  L.messages.forEach(function(m,i){
+    if(m.dir==="sys")h+='<div class="sysline">'+esc(m.body)+' · '+esc(longDate(m.at))+'</div>';
+    else h+='<div class="bub '+m.dir+(popFrom!=null&&i>=popFrom?" pop":"")+'" title="'+esc(longDate(m.at))+'">'+esc(m.body)+'</div>';
+    if(i===last&&m.dir!=="sys")h+='<div class="bubtime '+m.dir+'">'+esc(clock(m.at))+'</div>';
+  });
+  return h;
+}
+function scen(){for(var i=0;i<SCEN.length;i++)if(SCEN[i].id===S.sim.scenario)return SCEN[i];return SCEN[0]}
+function viewTest(){
+  var sc=scen(),sim=S.sim,d=S.draft,h="";
+  h+='<section class="sec"><h3>Who\'s ringing?</h3><div class="chips">'+SCEN.map(function(x){return'<button class="chip" data-act="scen" data-s="'+x.id+'" aria-pressed="'+(x.id===sc.id)+'">'+x.label+'</button>'}).join("")+'</div>'+
+    '<p class="hint">'+esc(sc.desc)+(dirty()?" Uses your unsaved changes.":"")+'</p><button class="btn accent wide" data-act="simcall">'+ICON.phone+(sim.verdict?"Miss the call again":"Miss the call")+'</button></section>';
+  if(!sim.verdict)return h;
+  var v=sim.verdict,hear=Flow.fill(v.send||v.reason==="recent"?d.greeting:d.greetingNoText,d,null);
+  h+='<div class="verdict '+(v.send?"yes":"no")+'" id="verdict">'+(v.send?ICON.tick:ICON.cross)+'<span><b>'+(v.send?"Text sent":"No text sent")+'</b><span>'+
+    esc(v.send?"The opening text goes out while their phone is still in their hand.":(Flow.REASONS[v.reason]||"")+(v.knownName?" ("+v.knownName+")":"")+". The call is still logged in your inbox"+(v.reason==="private"?".":" so you can ring back."))+'</span></span></div>';
+  h+='<section class="sec"><h3>What they hear</h3><div class="quote">'+(hear?esc(hear):"Nothing. The call just ends.")+(d.voicemail?"\n(beep, then up to two minutes to leave a message)":"")+'</div></section>';
+  if(sim.lead&&v.send){
+    h+='<div class="phone"><div class="phone-top"><span class="avatar">'+ICON.phone+'</span><span><b>'+esc(d.business||"Your business")+'</b><span>The caller\'s phone · '+esc(Flow.pretty(sim.lead.phone))+'</span></span></div>'+
+      '<div class="thread" id="simthread">'+threadHTML(sim.lead)+(sim.busy?'<div class="typing"><i></i><i></i><i></i></div>':"")+'</div>'+
+      (sim.done?"":'<form class="compose" data-form="simreply"><textarea id="simtext" rows="1" placeholder="Reply as the caller" aria-label="Reply as the caller"></textarea><button class="sendbtn" type="submit" aria-label="Send reply">'+ICON.send+'</button></form>'+
+        '<div class="rowacts"><button class="btn sm" data-act="simsample">Use an example answer</button><button class="btn sm" data-act="simstop">Reply STOP</button></div>')+'</div>';
+    if(sim.done&&sim.lead.stage==="complete"){
+      h+='<section class="sec"><h3>The text you get</h3><div class="quote">'+esc(d.notify?Flow.summary(sim.lead):"Nothing, because summary texts are switched off under Rules.")+'</div>'+
+        '<h3>Saved against the lead</h3><dl class="kv">'+sim.lead.answers.map(function(a){return'<dt>'+esc(a.label)+'</dt><dd>'+esc(a.value)+'</dd>'}).join("")+'</dl>'+
+        (S.status.live?"":'<div class="rowacts"><button class="btn primary" data-act="tab" data-tab="inbox">See it in the inbox</button></div>')+'</section>';
+    }else if(sim.done)h+='<div class="notice">They opted out. Callcatch won\'t text that number again unless they text START.</div>';
+  }
+  return h;
+}
+function simCall(){
+  var sc=scen(),d=S.draft,now=Date.now(),ctx={known:sc.known||null};
+  if(sc.recent)ctx.last={lastTextAt:now-36e5};
+  var v=Flow.decide(d,sc.from,ctx,now),L=Flow.newLead(v.phone,now,"sim"+now);
+  L.test=true;Flow.push(L,"sys","Missed call",now);
+  if(v.send)Flow.start(d,L,now);
+  S.sim.lead=L;S.sim.verdict=v;S.sim.done=!v.send;S.sim.busy=false;
+  renderView();var el=$("verdict");if(el&&el.scrollIntoView)el.scrollIntoView({behavior:reduced()?"auto":"smooth",block:"start"});
+}
+function simReply(text,focus){
+  var sim=S.sim,L=sim.lead;text=String(text||"").trim();if(!L||sim.done||sim.busy||!text)return;
+  var res=Flow.reply(S.draft,L,text,Date.now()),held=res.send.length?L.messages.splice(L.messages.length-res.send.length):[];
+  sim.busy=held.length>0;renderView();scrollThread(focus);
+  function finish(){
+    held.forEach(function(m){m.at=Date.now();L.messages.push(m)});sim.busy=false;
+    if(res.done||res.optout){sim.done=true;if(!S.status.live&&res.done){L.unread=true;L.updatedAt=Date.now();putLead(clone(L));renderChrome();toast("Added to your inbox as a test lead")}}
+    renderView();scrollThread(focus);
+  }
+  if(held.length&&!reduced())setTimeout(finish,750);else finish();
+}
+function scrollThread(focus){var t=$("simtext");if(t&&focus){t.focus({preventScroll:true})}var p=document.querySelector(".phone");if(p&&p.scrollIntoView)p.scrollIntoView({behavior:reduced()?"auto":"smooth",block:"end"})}
+
+/* ---------- setup ---------- */
+function code(text,label){return'<div class="codebox"><div style="flex:1;min-width:0">'+(label?'<small>'+esc(label)+'</small>':"")+'<code>'+esc(text)+'</code></div><button class="iconbtn fill" data-act="copy" data-copy="'+esc(text)+'" aria-label="Copy '+esc(text)+'">'+ICON.copy+'</button></div>'}
+function stepHTML(n,done,title,body){return'<section class="sec"><div class="step"><span class="stepmark'+(done?" done":"")+'">'+(done?ICON.tick:n)+'</span><div class="body"><h2>'+esc(title)+'</h2>'+body+'</div></div></section>'}
+function viewSetup(){
+  var st=S.status,live=st.live,tw=st.twilio||{},sm=st.sm8||{},h="";
+  if(!live)h+='<div class="notice"><span><b>Why there are two parts.</b> No phone app is allowed to see your missed calls or send texts for you, so your mobile forwards unanswered calls to a business text number and a small engine does the texting. This page is the preview. The live app is this same screen, running on the engine at its own web address.</span></div>';
+
+  h+=stepHTML(1,live&&tw.connected,"Get a text number","<ol><li>Open an account at twilio.com. It is the service that owns the number and sends the texts.</li><li>Twilio checks who you are before it sells an Australian mobile number. Have your ABN, business registration, proof of address and photo ID ready. Approval can take up to five business days.</li><li>Buy an Australian mobile number (starts +614) that shows both Voice and SMS.</li></ol>"+
+    '<p class="hint">Your own mobile number doesn\'t change. Customers keep ringing the number they already have.</p>');
+
+  h+=stepHTML(2,live,"Put the engine online",live?"<p>Done. You are using it now. Add this page to your home screen so it opens like an app.</p>":"<ol><li>Open a free account at cloudflare.com.</li><li>Create a D1 database and call it <b>callcatch</b>.</li><li>Create a Worker, also called <b>callcatch</b>, starting from the Hello World template.</li><li>Open its code editor, delete what is there, paste in the whole of the <b>callcatch-engine.js</b> file, and deploy.</li><li>In the Worker's settings, add a D1 binding with the variable name <b>DB</b> pointing at the callcatch database.</li><li>Add a secret named <b>APP_PASSWORD</b>. This is the password you log in with.</li><li>Open the Worker's address (it ends in workers.dev), log in, and add it to your home screen.</li></ol>"+
+    '<p class="hint">Cloudflare moves its menus around now and then, so the names may differ slightly. It is about a ten minute job at a computer.</p>');
+
+  var b3;
+  if(!live)b3="<p>In the live app you paste your Twilio Account SID and Auth Token here and pick your number. Callcatch then points the number's calls and texts at itself, so there are no web addresses to copy across.</p>";
+  else if(tw.ready)b3='<div class="notice ok"><span>Connected to <b class="num">'+esc(Flow.pretty(tw.number))+'</b>. Calls and texts to this number come to Callcatch.</span></div>'+errBox("tw")+'<div class="rowacts">'+busyBtn("Send me a test text","test","primary",'data-act="twtest"')+(tw.fromEnv?"":'<button class="linkbtn" data-act="twoff">Disconnect</button>')+'</div>';
+  else if(S.numbers){
+    b3=S.numbers.length?'<p>Pick the number Callcatch should answer.</p>'+S.numbers.map(function(n,i){return'<label class="radio"><input type="radio" name="twnum" value="'+esc(n.sid)+'"'+(i===0?" checked":"")+'><span><b class="num">'+esc(Flow.pretty(n.number))+'</b>'+(n.voice&&n.sms?"":' <span class="pill amber">'+(!n.voice?"No voice":"No SMS")+'</span>')+'</span></label>'}).join("")+errBox("tw")+'<div class="rowacts">'+busyBtn("Use this number","twnum","primary",'data-act="twnum"')+'</div>'
+      :'<div class="notice warn">That account has no phone numbers yet. Buy an Australian mobile number in Twilio, then connect again.</div><div class="rowacts"><button class="btn" data-act="twback">Back</button></div>';
+  }else b3=(tw.fromEnv?'<p>Your Twilio details are set on the engine. Load your numbers to finish.</p>':'<p>Both of these are on the front page of your Twilio console.</p><div class="two"><label class="field">Account SID<input id="twsid" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AC..."></label><label class="field">Auth Token<input id="twtoken" type="password" autocomplete="off"></label></div>')+errBox("tw")+'<div class="rowacts">'+busyBtn(tw.fromEnv?"Load my numbers":"Connect Twilio","tw","primary",'data-act="twconnect"')+'</div>';
+  h+=stepHTML(3,live&&tw.ready,"Connect your text number",b3);
+
+  var b4;
+  if(!live)b4="<p>Paste a ServiceM8 API key and Callcatch pulls the phone numbers of your clients and job contacts, then refreshes them a few times a day. Those callers are logged by name and not texted.</p><p class=\"hint\">In ServiceM8 the key is under Settings, then API Keys.</p>";
+  else if(sm.connected)b4='<div class="notice '+(sm.error?"warn":"ok")+'">'+(sm.error?"<span>The last refresh failed: "+esc(sm.error)+"</span>":'<span><b class="num">'+(sm.count||0).toLocaleString("en-AU")+'</b> client number'+(sm.count===1?"":"s")+' loaded'+(sm.syncedAt?", refreshed "+esc(ago(sm.syncedAt).toLowerCase()):"")+'.</span>')+'</div>'+errBox("sm8")+'<div class="rowacts">'+busyBtn("Refresh now","sm8","",'data-act="sm8sync"')+'<button class="linkbtn" data-act="sm8off">Disconnect</button></div>';
+  else b4='<p>In ServiceM8, go to Settings, then API Keys, and create a key. Paste it here.</p><label class="field">ServiceM8 API key<input id="sm8key" type="password" autocomplete="off"></label>'+errBox("sm8")+'<div class="rowacts">'+busyBtn("Connect ServiceM8","sm8","primary",'data-act="sm8connect"')+'</div>';
+  h+=stepHTML(4,live&&sm.connected&&!sm.error,"Tell it who your clients are",b4);
+
+  var num=live&&tw.number?"0"+tw.number.replace(/^\+61/,""):"04XXXXXXXX";
+  h+=stepHTML(5,false,"Forward your missed calls","<p>On your own mobile, type each code into the phone keypad and press call. You only do this once."+(live&&tw.number?"":" Swap 04XXXXXXXX for your text number.")+"</p>"+
+    code("**61*"+num+"*11#","When you don't answer")+code("**67*"+num+"*11#","When you're on another call or decline")+code("**62*"+num+"*11#","When your phone is off or out of range")+
+    '<p class="hint">These are the standard network codes, as Telstra lists them. Optus, Vodafone and most resellers use the same ones. If a code won\'t take, ask your carrier to switch on call forwarding when unanswered. To undo it, dial <code>##61#</code>, <code>##67#</code> and <code>##62#</code>.</p>'+
+    '<p class="hint">Once this is on, unanswered calls go to Callcatch\'s greeting and voicemail instead of your carrier\'s voicemail.</p>');
+
+  h+=stepHTML(6,false,"Test it for real","<ol><li>Add your own mobile under Rules so you get the summary text.</li><li>Ring your mobile from a phone that isn't in ServiceM8 and let it ring out.</li><li>That phone should hear your greeting and get the opening text within a few seconds. Reply to it and watch the lead fill in here.</li></ol>");
+
+  h+='<section class="sec"><h3>What it costs to run</h3><table class="costs"><tr><td>The text number</td><td>about $8 a month</td></tr><tr><td>Each text sent</td><td>about 5c</td></tr><tr><td>Each text received</td><td>under 1c</td></tr><tr><td>Each forwarded call, per minute</td><td>about 5c</td></tr><tr><td>The engine and database on Cloudflare</td><td>free at this size</td></tr></table>'+
+    '<p class="hint">From Twilio\'s Australian price list in October 2026. Check their pricing page before you commit, since they change it without notice. Your carrier may also count a forwarded call as a normal call to a mobile.</p></section>';
+  if(live)h+='<section class="sec"><h3>This app</h3><p class="hint">Callcatch engine '+esc(st.version||"")+' at '+esc(st.base||location.origin)+'</p><div class="rowacts"><button class="btn" data-act="logout">Log out</button></div></section>';
+  return h;
+}
+function act(key,errKey,fn){
+  if(S.busy[key])return;S.busy[key]=true;S.err[errKey]="";renderView();
+  fn().then(function(msg){S.busy[key]=false;return refresh("force").then(function(){if(msg)toast(msg)})},function(e){S.busy[key]=false;S.err[errKey]=e.message;renderView()});
+}
+
+/* ---------- lead sheet ---------- */
+function renderSheet(){
+  var L=leadOf(S.open);if(!L){closeSheet();return}
+  var st=stageInfo(L),name=dispName(L),canText=L.phone&&Flow.isMobile(L.phone)&&L.stage!=="optout",h="";
+  h+='<div><h2 class="sh-name">'+esc(name)+'</h2><div class="sh-sub"><span class="pill '+st.cls+'">'+esc(st.text)+'</span>'+(L.calls>1?'<span class="pill">Called '+L.calls+'×</span>':"")+(L.knownName?'<span class="pill">ServiceM8 client</span>':"")+(L.example?'<span class="pill">Example</span>':"")+(L.test?'<span class="pill">Test</span>':"")+'</div></div>';
+  h+='<div class="quick"><a class="qa call" href="tel:'+esc(L.phone)+'"'+(L.phone?"":' aria-disabled="true"')+'>'+ICON.phone+'Call back</a><button class="qa" data-act="copy" data-copy="'+esc(L.phone?Flow.pretty(L.phone):"")+'"'+(L.phone?"":' aria-disabled="true"')+'>'+ICON.copy+'<span class="num">'+esc(L.phone?Flow.pretty(L.phone):"No number")+'</span></button></div>';
+  h+='<div class="seg" role="group" aria-label="Status">'+Object.keys(STATUS).map(function(k){return'<button data-act="status" data-st="'+k+'" aria-pressed="'+(L.status===k)+'">'+STATUS[k]+'</button>'}).join("")+'</div>';
+  if(L.answers.length)h+='<section class="sec"><h3>What they told you</h3><dl class="kv">'+L.answers.map(function(a){return'<dt>'+esc(a.label)+'</dt><dd>'+esc(a.value)+'</dd>'}).join("")+'</dl></section>';
+  if((L.voicemails||[]).length)h+='<section class="sec"><h3>Voicemail</h3>'+L.voicemails.map(function(v,i){return'<div><p class="hint">'+esc(longDate(v.at))+'</p>'+(S.status.live?'<audio controls preload="none" src="/api/recording/'+esc(L.id)+'/'+i+'"></audio>':"")+'</div>'}).join("")+'</section>';
+  h+='<section class="sec"><h3>Conversation</h3><div class="thread" id="thread">'+threadHTML(L)+'</div>'+errBox("msg")+
+    (canText?'<form class="compose" data-form="msg"><textarea id="msgtext" rows="1" placeholder="Text '+esc(L.firstName||"them")+' from your business number" aria-label="Write a text"></textarea><button class="sendbtn" type="submit" aria-label="Send text"'+(S.busy.msg?" disabled":"")+'>'+ICON.send+'</button></form>'+(S.status.live?"":'<p class="hint">Preview only. Nothing is sent.</p>'):
+      '<p class="hint">'+(L.stage==="optout"?"They replied STOP, so texting is off for this number.":L.phone?"This number can't receive texts.":"The number was hidden, so there is nobody to text or call back.")+'</p>')+'</section>';
+  h+='<section class="sec"><h3>Your notes</h3><label class="field">Notes on this caller<textarea id="notes" rows="3" placeholder="Quoted $, gate code, dog in yard">'+esc(L.notes||"")+'</textarea></label></section>';
+  h+=S.confirmDel?'<div class="notice err"><span>Delete this missed call and its conversation for good?</span><div class="acts"><button class="btn sm danger" data-act="delyes">Delete</button><button class="btn sm" data-act="delno">Keep it</button></div></div>':'<button class="linkbtn" data-act="del" style="align-self:flex-start">Delete this missed call</button>';
+  $("shbody").innerHTML=h;$("shlabel").textContent=(L.source==="text"?"Text in":"Missed call")+" · "+longDate(L.createdAt);
+}
+function openSheet(id){
+  var L=leadOf(id);if(!L)return;S.open=id;S.confirmDel=false;S.err.msg="";
+  $("sheetwrap").hidden=false;$("sheetwrap").classList.remove("closing");document.documentElement.classList.add("lock");renderSheet();$("shbody").scrollTop=0;
+  if(L.unread){L.unread=false;Store.patchLead(id,{unread:false}).catch(function(){});renderView()}
+}
+function closeSheet(){
+  if(!S.open)return;saveNotes(true);S.open=null;var w=$("sheetwrap");document.documentElement.classList.remove("lock");
+  if(reduced()){w.hidden=true;return}w.classList.add("closing");setTimeout(function(){if(!S.open){w.hidden=true;w.classList.remove("closing")}},230);
+}
+function saveNotes(now){
+  clearTimeout(S.noteT);var el=$("notes"),id=S.open,L=leadOf(id);if(!el||!L||el.value===(L.notes||""))return;
+  var v=el.value;function run(){L.notes=v;Store.patchLead(id,{notes:v}).catch(function(e){toast(e.message)})}
+  if(now)run();else S.noteT=setTimeout(run,700);
+}
+
+/* ---------- loading and refreshing ---------- */
+function apply(d){S.leads=d.leads||[];S.status=d.status||S.status;var same=!dirty();S.settings=Flow.merge(d.settings);if(same||!S.ready)S.draft=clone(S.settings);S.ready=true}
+function refresh(mode){
+  return Store.load().then(function(d){
+    hideGate();var ae=document.activeElement,typing=!!ae&&/^(INPUT|TEXTAREA)$/.test(ae.tagName),inMain=typing&&$("main").contains(ae);
+    var before=S.open&&leadOf(S.open),sig=function(L){return L?L.messages.length+"|"+L.stage+"|"+L.status+"|"+(L.voicemails||[]).length:""},was=sig(before);
+    apply(d);renderChrome();
+    if(mode!=="poll"||S.view==="inbox"||(S.view==="setup"&&!inMain))renderView();
+    if(S.open){var L=leadOf(S.open);if(!L)closeSheet();else if(mode==="poll"&&typing){if(was!==sig(L)){var t=$("thread");if(t)t.innerHTML=threadHTML(L)}}else if(was!==sig(L)||mode!=="poll")renderSheet()}
+  },function(e){
+    if(e.status===401)return showGate("login");if(e.code==="setup")return showGate("setup",e.steps);
+    if(!S.ready){$("main").innerHTML='<div class="notice err"><span>'+esc(e.message)+'</span><div class="acts"><button class="btn sm" data-act="retry">Try again</button></div></div>'}
+  });
+}
+var LOGO='<svg class="logo" viewBox="0 0 100 100" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="25" fill="#F58220"/><g fill="none" stroke="#141A40" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M28 28h44a9 9 0 0 1 9 9v22a9 9 0 0 1-9 9H49L35 80V68h-7a9 9 0 0 1-9-9V37a9 9 0 0 1 9-9z"/><path d="M64 39v5a7 7 0 0 1-7 7H38M45 44l-7 7 7 7"/></g></svg>';
+function showGate(kind,steps){
+  var g=$("gate");if(!g.hidden&&g.dataset.kind===kind)return;g.dataset.kind=kind;g.hidden=false;
+  if(kind==="login")g.innerHTML='<form class="gate-in" data-form="login">'+LOGO+'<h1>Call<i>catch</i></h1><p>Enter the password you set on the engine.</p><input id="pw" type="password" autocomplete="current-password" aria-label="Password" placeholder="Password"><div class="err" id="pwerr" role="alert"></div><button class="btn accent wide" type="submit">Log in</button></form>';
+  else g.innerHTML='<div class="gate-in">'+LOGO+'<h1>Almost there</h1><p>The engine is online but two settings are still missing in Cloudflare.</p><ol>'+(steps||[]).map(function(s){return"<li>"+esc(s)+"</li>"}).join("")+'</ol><button class="btn accent wide" data-act="retry">Check again</button></div>';
+  var p=$("pw");if(p)p.focus();
+}
+function hideGate(){$("gate").hidden=true;$("gate").dataset.kind=""}
+
+/* ---------- events ---------- */
+document.addEventListener("click",function(ev){
+  var el=ev.target.closest("[data-act]");if(!el)return;var a=el.dataset.act,d=S.draft,i=Number(el.dataset.i);
+  if(a==="tab"){if(S.open)closeSheet();go(el.dataset.tab)}
+  else if(a==="filter"){S.filter=el.dataset.f;try{localStorage.setItem("callcatch-filter",S.filter)}catch(e){}renderView(true)}
+  else if(a==="open")openSheet(el.dataset.id);
+  else if(a==="close")closeSheet();
+  else if(a==="copy")copyText(el.dataset.copy,el.parentNode.querySelector("code")||el.querySelector(".num"));
+  else if(a==="retry")refresh();
+  else if(a==="save"){var b=$("savebtn");b.disabled=true;Store.saveSettings(S.draft).then(function(s){S.settings=Flow.merge(s);S.draft=clone(S.settings);b.disabled=false;renderChrome();renderView();toast("Saved")},function(e){b.disabled=false;toast(e.message)})}
+  else if(a==="discard"){S.draft=clone(S.settings);renderChrome();renderView()}
+  else if(a==="stepadd"){d.steps.push({label:"Answer",text:""});renderView();syncSave();var t=$("f-steps-"+(d.steps.length-1)+"-text");if(t)t.focus()}
+  else if(a==="stepdel"){d.steps.splice(i,1);renderView();syncSave()}
+  else if(a==="stepup"&&i>1){d.steps.splice(i-1,0,d.steps.splice(i,1)[0]);renderView();syncSave()}
+  else if(a==="stepdown"&&i<d.steps.length-1){d.steps.splice(i+1,0,d.steps.splice(i,1)[0]);renderView();syncSave()}
+  else if(a==="resetscript"){var o=Flow.merge(null);d.steps=o.steps;d.closing=o.closing;renderView();syncSave();toast("Original script restored. Save to keep it.")}
+  else if(a==="skipadd"){var nm=$("skipname").value.trim(),nu=$("skipnum").value.trim(),p=Flow.norm(nu,d.areaCode);
+    if(!p){S.err.skip="That doesn't look like a phone number. Try it as 04XX XXX XXX.";renderView();return}
+    if(d.skipList.some(function(x){return Flow.norm(x.phone,d.areaCode)===p})){S.err.skip="That number is already on the list.";renderView();return}
+    S.err.skip="";d.skipList.push({name:nm,phone:p});renderView();syncSave()}
+  else if(a==="skipdel"){d.skipList.splice(i,1);renderView();syncSave()}
+  else if(a==="scen"){S.sim={scenario:el.dataset.s,lead:null,verdict:null,done:false,busy:false};renderView()}
+  else if(a==="simcall")simCall();
+  else if(a==="simsample"){var L=S.sim.lead;if(L)simReply(SAMPLE[L.step]||"Sounds good")}
+  else if(a==="simstop")simReply("STOP");
+  else if(a==="status"){var id=S.open,L2=leadOf(id),stv=el.dataset.st;if(!L2||L2.status===stv)return;var prev=L2.status;L2.status=stv;renderSheet();renderChrome();renderView();
+    Store.patchLead(id,{status:stv}).then(function(){toast(stv==="booked"?"Booked. Nice one.":"Marked "+STATUS[stv].toLowerCase())},function(e){L2.status=prev;renderSheet();renderChrome();renderView();toast(e.message)})}
+  else if(a==="del"){S.confirmDel=true;renderSheet();$("shbody").scrollTop=$("shbody").scrollHeight}
+  else if(a==="delno"){S.confirmDel=false;renderSheet()}
+  else if(a==="delyes"){var did=S.open;Store.deleteLead(did).then(function(){S.leads=S.leads.filter(function(x){return x.id!==did});S.noteT&&clearTimeout(S.noteT);S.open=null;$("sheetwrap").hidden=true;document.documentElement.classList.remove("lock");renderChrome();renderView();toast("Deleted")},function(e){toast(e.message)})}
+  else if(a==="twconnect")act("tw","tw",function(){return call("POST","/api/twilio/connect",{sid:($("twsid")||{}).value,token:($("twtoken")||{}).value}).then(function(r){S.numbers=r.numbers})});
+  else if(a==="twnum"){var r0=document.querySelector('input[name="twnum"]:checked');act("twnum","tw",function(){return call("POST","/api/twilio/number",{numberSid:r0?r0.value:""}).then(function(){S.numbers=null;return"Number connected"})})}
+  else if(a==="twback"){S.numbers=null;renderView()}
+  else if(a==="twtest")act("test","tw",function(){return call("POST","/api/twilio/test",{}).then(function(){return"Test text sent to your mobile"})});
+  else if(a==="twoff")act("tw","tw",function(){return call("POST","/api/twilio/disconnect",{}).then(function(){S.numbers=null;return"Twilio disconnected"})});
+  else if(a==="sm8connect")act("sm8","sm8",function(){return call("POST","/api/sm8/connect",{key:($("sm8key")||{}).value}).then(function(r){return r.count.toLocaleString("en-AU")+" client numbers loaded"})});
+  else if(a==="sm8sync")act("sm8","sm8",function(){return call("POST","/api/sm8/connect",{}).then(function(r){return r.count.toLocaleString("en-AU")+" client numbers loaded"})});
+  else if(a==="sm8off")act("sm8","sm8",function(){return call("POST","/api/sm8/disconnect",{}).then(function(){return"ServiceM8 disconnected"})});
+  else if(a==="logout")call("POST","/api/logout",{}).then(function(){showGate("login")},function(){showGate("login")});
+});
+document.addEventListener("input",function(ev){
+  var el=ev.target;
+  if(el.id==="notes"){saveNotes();return}
+  if(el.classList&&el.tagName==="TEXTAREA"&&el.closest(".compose")){el.style.height="auto";el.style.height=Math.min(140,el.scrollHeight+2)+"px";return}
+  var b=el.dataset&&el.dataset.bind;if(!b||el.type==="checkbox")return;
+  setPath(S.draft,b,el.type==="number"?Math.max(0,Math.min(720,Number(el.value)||0)):el.value);
+  if(S.view==="script")refreshMeters();if(S.view==="rules")notifyHint();syncSave();
+});
+document.addEventListener("change",function(ev){
+  var el=ev.target,b=el.dataset&&el.dataset.bind;if(!b||el.type!=="checkbox")return;
+  setPath(S.draft,b,el.checked);if(S.view==="script")refreshMeters();if(S.view==="rules")notifyHint();syncSave();
+});
+document.addEventListener("submit",function(ev){
+  var f=ev.target,kind=f.dataset&&f.dataset.form;if(!kind)return;ev.preventDefault();
+  if(kind==="simreply"){var t=$("simtext");simReply(t.value,true)}
+  else if(kind==="msg"){var m=$("msgtext"),text=m.value.trim(),id=S.open;if(!text||S.busy.msg)return;S.busy.msg=true;S.err.msg="";
+    Store.sendMessage(id,text).then(function(L){S.busy.msg=false;putLead(L);if(S.open===id)renderSheet();renderChrome();renderView();toast(S.status.live?"Text sent":"Added to the preview. Nothing was sent.")},
+      function(e){S.busy.msg=false;S.err.msg=e.message;if(S.open===id){renderSheet();var m2=$("msgtext");if(m2)m2.value=text}})}
+  else if(kind==="login"){var p=$("pw");call("POST","/api/login",{password:p.value}).then(function(){refresh()},function(e){$("pwerr").textContent=e.message;p.select()})}
+});
+document.addEventListener("keydown",function(ev){
+  if(ev.key==="Escape"&&S.open)closeSheet();
+  if(ev.key==="Enter"&&!ev.shiftKey&&ev.target.closest&&ev.target.closest(".compose")){ev.preventDefault();var f=ev.target.closest("form");if(f.requestSubmit)f.requestSubmit();else f.dispatchEvent(new Event("submit",{bubbles:true,cancelable:true}))}
+});
+window.addEventListener("beforeunload",function(){saveNotes(true)});
+
+/* ---------- start ---------- */
+try{var f0=localStorage.getItem("callcatch-filter");if(f0&&CHIPS.some(function(x){return x[0]===f0}))S.filter=f0}catch(e){}
+var h0=(location.hash||"").replace("#","");if(TABS.some(function(t){return t[0]===h0}))S.view=h0;
+renderChrome();renderView();
+refresh().then(function(){renderView(true)});
+if(LIVE)setInterval(function(){if(document.visibilityState==="visible"&&$("gate").hidden&&S.ready)refresh("poll")},20000);
+document.addEventListener("visibilitychange",function(){if(LIVE&&document.visibilityState==="visible"&&$("gate").hidden&&S.ready)refresh("poll")});
+setTimeout(function(){var s=$("splash");if(s)s.remove()},2400);
+})();
+
+</script>
+
+</body></html>
